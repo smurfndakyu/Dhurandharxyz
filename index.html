@@ -2,57 +2,67 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Fullscreen Player</title>
+<title>TV Video Player</title>
 
 <style>
-  html, body {
-    margin: 0;
-    padding: 0;
-    background: black;
-    height: 100%;
-    overflow: hidden;
-  }
+html, body {
+  margin: 0;
+  padding: 0;
+  background: black;
+  height: 100%;
+  overflow: hidden;
+}
 
-  .player {
-    position: relative;
-    width: 100vw;
-    height: 100vh;
-  }
+.player {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  background: black;
+}
 
-  video {
-    width: 100%;
-    height: 100%;
-    object-fit: contain; /* change to cover if needed */
-    background: black;
-  }
+video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: black;
+}
 
-  .seek-btn {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    font-size: 22px;
-    padding: 18px 22px;
-    background: rgba(0,0,0,0.6);
-    color: white;
-    border: none;
-    border-radius: 50%;
-    cursor: pointer;
-    opacity: 1;
-    transition: opacity 0.4s;
-  }
+/* Hide native fullscreen */
+video::-webkit-media-controls-fullscreen-button {
+  display: none;
+}
 
-  .back {
-    left: 30px;
-  }
+/* Buttons common */
+.btn {
+  position: absolute;
+  background: rgba(0,0,0,0.6);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  font-size: 22px;
+  padding: 18px;
+  cursor: pointer;
+}
 
-  .forward {
-    right: 30px;
-  }
+/* Seek buttons */
+.back { left: 30px; top: 50%; transform: translateY(-50%); }
+.forward { right: 30px; top: 50%; transform: translateY(-50%); }
 
-  .hide {
-    opacity: 0;
-    pointer-events: none;
-  }
+/* Center play button */
+.center {
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 32px;
+  padding: 26px;
+}
+
+/* Hide animation */
+.hide {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s;
+}
 </style>
 </head>
 
@@ -60,47 +70,84 @@
 
 <div class="player" id="player">
 
-  <video id="video" controls>
-    <source src="https://streambot-e9ea39644697.herokuapp.com/AgAD8i11563">
-    Not supported
+  <video id="video">
+    <source src="https://file-to-link-2-64f1046bd8ac.herokuapp.com/dl/695b919ab7fe6da345928221">
   </video>
 
-  <button class="seek-btn back" id="backBtn">⏪ 10s</button>
-  <button class="seek-btn forward" id="fwdBtn">⏩ 10s</button>
+  <button class="btn back" id="back">⏪</button>
+  <button class="btn center" id="playPause">▶</button>
+  <button class="btn forward" id="forward">⏩</button>
 
 </div>
 
 <script>
-  const video = document.getElementById("video");
-  const backBtn = document.getElementById("backBtn");
-  const fwdBtn = document.getElementById("fwdBtn");
-  const player = document.getElementById("player");
+const video = document.getElementById("video");
+const back = document.getElementById("back");
+const forward = document.getElementById("forward");
+const playPause = document.getElementById("playPause");
+const player = document.getElementById("player");
 
-  let timer;
+let timer;
 
-  function seek(sec) {
-    video.currentTime += sec;
-    showButtons();
+/* Seek */
+back.onclick = () => seek(-10);
+forward.onclick = () => seek(10);
+
+function seek(sec) {
+  video.currentTime += sec;
+  showControls();
+}
+
+/* Play / Pause */
+playPause.onclick = togglePlay;
+
+function togglePlay() {
+  if (video.paused) {
+    video.play();
+  } else {
+    video.pause();
   }
+  updatePlayIcon();
+  showControls();
+}
 
-  backBtn.onclick = () => seek(-10);
-  fwdBtn.onclick = () => seek(10);
+function updatePlayIcon() {
+  playPause.textContent = video.paused ? "▶" : "⏸";
+}
 
-  function showButtons() {
-    backBtn.classList.remove("hide");
-    fwdBtn.classList.remove("hide");
-    clearTimeout(timer);
-    timer = setTimeout(() => {
-      backBtn.classList.add("hide");
-      fwdBtn.classList.add("hide");
-    }, 3000);
-  }
+/* Auto hide */
+function showControls() {
+  back.classList.remove("hide");
+  forward.classList.remove("hide");
+  playPause.classList.remove("hide");
 
-  ["click", "mousemove", "touchstart"].forEach(e => {
-    player.addEventListener(e, showButtons);
-  });
+  clearTimeout(timer);
+  timer = setTimeout(() => {
+    back.classList.add("hide");
+    forward.classList.add("hide");
+    playPause.classList.add("hide");
+  }, 3000);
+}
 
-  showButtons();
+/* Remote control keys */
+document.addEventListener("keydown", (e) => {
+  showControls();
+
+  if (e.key === "ArrowLeft") seek(-10);
+  if (e.key === "ArrowRight") seek(10);
+  if (e.key === "Enter" || e.key === " ") togglePlay();
+});
+
+/* Sync icon */
+video.addEventListener("play", updatePlayIcon);
+video.addEventListener("pause", updatePlayIcon);
+
+/* Show controls on interaction */
+["click", "mousemove", "touchstart"].forEach(ev => {
+  player.addEventListener(ev, showControls);
+});
+
+showControls();
 </script>
 
 </body>
