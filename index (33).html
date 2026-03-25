@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>TV Video Player</title>
+
+<style>
+html, body {
+  margin: 0;
+  padding: 0;
+  background: black;
+  height: 100%;
+  overflow: hidden;
+}
+
+.player {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  background: black;
+}
+
+video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: black;
+}
+
+/* Hide native fullscreen */
+video::-webkit-media-controls-fullscreen-button {
+  display: none;
+}
+
+/* Buttons */
+.btn {
+  position: absolute;
+  background: rgba(0,0,0,0.65);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  font-size: 22px;
+  padding: 18px;
+  cursor: pointer;
+}
+
+/* Positions */
+.back { left: 30px; top: 50%; transform: translateY(-50%); }
+.forward { right: 30px; top: 50%; transform: translateY(-50%); }
+.center { left: 50%; top: 50%; transform: translate(-50%, -50%); }
+
+/* Speed box */
+.speed-box {
+  position: absolute;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  background: rgba(0,0,0,0.6);
+  padding: 8px 12px;
+  border-radius: 8px;
+  color: white;
+  font-size: 14px;
+}
+
+.speed-box input {
+  width: 55px;
+  padding: 4px;
+  font-size: 14px;
+  text-align: center;
+}
+
+/* Hide */
+.hide {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s;
+}
+</style>
+</head>
+
+<body>
+
+<div class="player" id="player">
+
+  <video id="video">
+    <source src="https://store-na-phx-1.gofile.io/download/web/16fdd3eb-724a-4d5e-b2ac-0ceb34dbe175/video.mp4">
+  </video>
+
+  <!-- Seek -->
+  <button class="btn back" id="back">⏪</button>
+  <button class="btn center" id="playPause">▶</button>
+  <button class="btn forward" id="forward">⏩</button>
+
+  <!-- Speed -->
+  <div class="speed-box" id="speedBox">
+    Speed:
+    <input type="number" id="speedInput" value="1" step="0.1" min="0.1">
+    x
+  </div>
+
+</div>
+
+<script>
+const video = document.getElementById("video");
+const .getElementById("forward");
+const playPause = document.getElementById("playPause");
+const speedBox = document.getElementById("speedBox");
+const speedInput = document.getElementById("speedInput");
+const player = document.getElementById("player");
+
+let timer;
+
+/* Seek */
+back.onclick = () => seek(-10);
+forward.onclick = () => seek(10);
+
+function seek(sec) {
+  video.currentTime += sec;
+  showControls();
+}
+
+/* Play / Pause */
+playPause.onclick = togglePlay;
+
+function togglePlay() {
+  video.paused ? video.play() : video.pause();
+  updateIcon();
+  showControls();
+}
+
+function updateIcon() {
+  playPause.textContent = video.paused ? "▶" : "⏸";
+}
+
+/* Speed */
+speedInput.addEventListener("change", () => {
+  let speed = parseFloat(speedInput.value);
+  if (speed < 0.1) speed = 0.1;
+  if (speed > 5) speed = 5;
+  video.playbackRate = speed;
+  speedInput.value = speed;
+  showControls();
+});
+
+/* Auto hide */
+function showControls() {
+  [back, forward, playPause, speedBox].forEach(el => el.classList.remove("hide"));
+  clearTimeout(timer);
+  timer = setTimeout(() => {
+    [back, forward, playPause, speedBox].forEach(el => el.classList.add("hide"));
+  }, 3000);
+}
+
+/* Remote keys */
+document.addEventListener("keydown", (e) => {
+  showControls();
+  if (e.key === "ArrowLeft") seek(-10);
+  if (e.key === "ArrowRight") seek(10);
+  if (e.key === "Enter" || e.key === " ") togglePlay();
+});
+
+/* Sync */
+video.addEventListener("play", updateIcon);
+video.addEventListener("pause", updateIcon);
+
+/* Interaction */
+["click","mousemove","touchstart"].forEach(e=>{
+  player.addEventListener(e, showControls);
+});
+
+showControls();
+</script>
+
+</body>
+</html>
